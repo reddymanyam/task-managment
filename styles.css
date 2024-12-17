@@ -1,0 +1,69 @@
+.web-footer, .navbar {
+    display: none !important;
+}
+
+body {
+    background-color: #f8f9fa;
+}
+
+h1 {
+    color: #333;
+}
+
+.table {
+    background-color: #ffffff;
+}
+
+.nav-tabs .nav-item .nav-link {
+    border-radius: 0; /* Make tabs attached */
+    text-align: center;
+    font-size: 1.2rem;
+}
+
+.nav-tabs {
+    border-bottom: 2px solid #dee2e6; /* Slight border enhancement */
+}
+
+.nav-tabs .nav-link.active {
+    background-color: #0d6efd; /* Active tab color */
+    color: #fff; /* Active tab text color */
+}
+
+.members-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.member-option {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: background-color 0.3s;
+}
+
+.member-option.selected {
+    background-color: #007bff;
+    color: #fff;
+    border: 1px solid #007bff;
+    position: relative;
+}
+
+.member-option .cross-mark {
+    margin-left: 10px;
+    font-size: 12px;
+    cursor: pointer;
+    display: none;
+}
+
+.member-option.selected .cross-mark {
+    display: inline;
+}
+
+.modal-body input,
+.modal-body select {
+    margin-bottom: 1rem;
+}
