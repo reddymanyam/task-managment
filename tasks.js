@@ -178,27 +178,41 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    document.getElementById('add-task-btn').addEventListener('click', () => {
+        const addTaskModal = new bootstrap.Modal(document.getElementById('addTaskModal'));
+        addTaskModal.show();
+    });
+    
     addTaskForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+        
+        // Capture the new task data from the form
         const taskData = {
             subject: document.getElementById('task-subject').value,
             status: document.getElementById('task-status').value,
+            team: document.getElementById('task-team').value,
+            priority: document.getElementById('task-priority').value,
             assigned_to: document.getElementById('task-assigned-to').value,
+            exp_start_date: document.getElementById('task-start-date').value,
             exp_end_date: document.getElementById('task-end-date').value,
+            progress: document.getElementById('task-progress').value,
+            description: document.getElementById('task-description').value,
         };
-
+    
         try {
+            // Make the API call to create the new task
             const response = await frappe.call({
                 method: "frappe.client.insert",
                 args: {
                     doc: {
                         doctype: "Task",
-                        ...taskData,
+                        ...taskData, // Spread the form data into the API call
                     },
                 },
             });
-
+    
             if (response.message) {
+                // Add the new task to the table and reset the form
                 addTaskToTable(response.message);
                 attachRowClickEvents();
                 addTaskModal.hide();
@@ -206,8 +220,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         } catch (error) {
             console.error("Error adding task:", error);
+            alert("Failed to add task. Please try again.");
         }
     });
+    
 
     await fetchTotalPages();
 });
