@@ -43,7 +43,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             </td>
             <td>${task.assigned_to || 'Unassigned'}</td>
             <td>${task.exp_end_date || 'N/A'}</td>
-           
         `;
         tbody.appendChild(row);
     }
@@ -74,83 +73,65 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const task = response.message;
                 const modalContent = document.getElementById('task-details-modal-content');
                 modalContent.innerHTML = `
-                    <div class="form-group">
-                        <label><strong>ID:</strong></label>
-                        <input type="text" class="form-control" value="${task.name}" readonly />
+                    <div class="grid-container">
+                        <div class="form-group">
+                            <label><strong>ID:</strong></label>
+                            <input type="text" class="form-control" value="${task.name}" readonly />
+                        </div>
+                        <div class="form-group">
+                            <label><strong>Subject:</strong></label>
+                            <input type="text" class="form-control" value="${task.subject || 'N/A'}" readonly />
+                        </div>
+                        <div class="form-group">
+                            <label><strong>Status:</strong></label>
+                            <select class="form-control" id="task-status">
+                                <option value="N/A" ${task.status === 'N/A' ? 'selected' : ''}>N/A</option>
+                                <option value="Open" ${task.status === 'Open' ? 'selected' : ''}>Open</option>
+                                <option value="Pending" ${task.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                                <option value="In Progress" ${task.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+                                <option value="Completed" ${task.status === 'Completed' ? 'selected' : ''}>Completed</option>
+                                <option value="Cancelled" ${task.status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label><strong>Team:</strong></label>
+                            <input type="text" class="form-control" id="task-team" value="${task.team || ''}" />
+                        </div>
+                        <div class="form-group">
+                            <label><strong>Priority:</strong></label>
+                            <input type="text" class="form-control" id="task-priority" value="${task.priority || ''}" />
+                        </div>
+                        <div class="form-group">
+                            <label><strong>Completed On:</strong></label>
+                            <input type="date" class="form-control" id="task-completed-on" value="${task.completed_on || ''}" />
+                        </div>
+                        <div class="form-group">
+                            <label><strong>Expected Start Date:</strong></label>
+                            <input type="date" class="form-control" id="task-exp-start-date" value="${task.exp_start_date || ''}" />
+                        </div>
+                        <div class="form-group">
+                            <label><strong>Expected End Date:</strong></label>
+                            <input type="date" class="form-control" id="task-exp-end-date" value="${task.exp_end_date || ''}" />
+                        </div>
+                        <div class="form-group">
+                            <label><strong>Progress (%):</strong></label>
+                            <input type="number" class="form-control" id="task-progress" value="${task.progress || 0}" />
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label><strong>Subject:</strong></label>
-                        <input type="text" class="form-control" value="${task.subject || 'N/A'}" readonly />
+                    <div class="form-group mt-3">
+                        <label><strong>Task Description:</strong></label>
+                        <textarea class="form-control" id="task-description" rows="4">${task.description || ''}</textarea>
                     </div>
-                    <div class="form-group">
-                        <label><strong>Status:</strong></label>
-                        <select class="form-control" id="task-status">
-                            <option value="N/A" ${task.status === 'N/A' ? 'selected' : ''}>N/A</option>
-                            <option value="Open" ${task.status === 'Open' ? 'selected' : ''}>Open</option>
-                            <option value="Pending" ${task.status === 'Pending' ? 'selected' : ''}>Pending</option>
-                            <option value="In Progress" ${task.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
-                            <option value="Completed" ${task.status === 'Completed' ? 'selected' : ''}>Completed</option>
-                            <option value="Cancelled" ${task.status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label><strong>Assigned To:</strong></label>
-                        <input type="text" class="form-control" id="task-assigned-to" value="${task.assigned_to || 'Unassigned'}" />
-                    </div>
-                    <div class="form-group">
-                        <label><strong>Expected End Date:</strong></label>
-                        <input type="date" class="form-control" id="task-exp-end-date" value="${task.exp_end_date || ''}" />
-                    </div>
-                    <button type="button" class="btn btn-primary" id="update-task">Update</button>
+                    <button type="button" class="btn btn-primary mt-3" id="update-task">Update</button>
                 `;
 
                 const taskDetailsModal = new bootstrap.Modal(document.getElementById('taskDetailsModal'));
                 taskDetailsModal.show();
-
-                // Add event listener for the Update button
-                document.getElementById('update-task').addEventListener('click', async () => {
-                    const updatedTask = {
-                        status: document.getElementById('task-status').value,
-                        assigned_to: document.getElementById('task-assigned-to').value,
-                        exp_end_date: document.getElementById('task-exp-end-date').value,
-                    };
-
-                    try {
-                        const updateResponse = await frappe.call({
-                            method: "frappe.client.set_value",
-                            args: {
-                                doctype: "Task",
-                                name: taskId,
-                                fieldname: updatedTask,
-                            },
-                        });
-
-                        if (updateResponse.message) {
-                            // Update the row in the table
-                            const row = document.querySelector(`tr[data-id="${taskId}"]`);
-                            if (row) {
-                                row.children[2].innerHTML = `
-                                    <button class="btn btn-${updatedTask.status === 'Completed' ? 'success' : 'warning'} btn-sm">
-                                        ${updatedTask.status}
-                                    </button>
-                                `;
-                                row.children[3].textContent = updatedTask.assigned_to || 'Unassigned';
-                                row.children[4].textContent = updatedTask.exp_end_date || 'N/A';
-                            }
-                            taskDetailsModal.hide();
-                        }
-                    } catch (error) {
-                        console.error("Error updating task:", error);
-                    }
-                });
-            } else {
-                console.error("No details found for this task.");
             }
         } catch (error) {
             console.error("Error fetching task details:", error);
         }
     }
-
 
     addTaskForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -183,5 +164,5 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    fetchTotalPages();
+    await fetchTotalPages();
 });
