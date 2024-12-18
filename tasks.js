@@ -136,16 +136,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                         exp_start_date: document.getElementById('task-exp-start-date').value,
                         exp_end_date: document.getElementById('task-exp-end-date').value,
                         progress: document.getElementById('task-progress').value,
-                        description: document.getElementById('task-description').value
+                        description: document.getElementById('task-description').value,
                     };
 
                     try {
                         const response = await frappe.call({
                             method: "frappe.client.get",
                             args: {
+                                doctype: "Task",
                                 doc: {
-                                    doctype: "Task",
-                                    ...updatedTaskData
+                                    fields:updatedTaskData
                                 }
                             }
                         });
