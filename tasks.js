@@ -76,11 +76,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <div class="grid-container">
                         <div class="form-group">
                             <label><strong>ID:</strong></label>
-                            <input type="text" class="form-control" value="${task.name}" readonly />
+                            <input type="text" class="form-control" id="task-id" value="${task.name}" readonly />
                         </div>
                         <div class="form-group">
                             <label><strong>Subject:</strong></label>
-                            <input type="text" class="form-control" value="${task.subject || 'N/A'}" readonly />
+                            <input type="text" class="form-control" id="task-subject" value="${task.subject || 'N/A'}" readonly />
                         </div>
                         <div class="form-group">
                             <label><strong>Status:</strong></label>
@@ -95,15 +95,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                         </div>
                         <div class="form-group">
                             <label><strong>Team:</strong></label>
-                            <input type="text" class="form-control" id="task-team" value="${task.team || ''}" />
+                            <input type="text" class="form-control" id="task-team" value="${task.team || ''}" readonly />
                         </div>
                         <div class="form-group">
                             <label><strong>Priority:</strong></label>
                             <input type="text" class="form-control" id="task-priority" value="${task.priority || ''}" />
                         </div>
                         <div class="form-group">
-                            <label><strong>Completed On:</strong></label>
-                            <input type="date" class="form-control" id="task-completed-on" value="${task.completed_on || ''}" />
+                            <label><strong>Progress (%):</strong></label>
+                            <input type="number" class="form-control" id="task-progress" value="${task.progress || 0}" />
                         </div>
                         <div class="form-group">
                             <label><strong>Expected Start Date:</strong></label>
@@ -113,10 +113,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             <label><strong>Expected End Date:</strong></label>
                             <input type="date" class="form-control" id="task-exp-end-date" value="${task.exp_end_date || ''}" />
                         </div>
-                        <div class="form-group">
-                            <label><strong>Progress (%):</strong></label>
-                            <input type="number" class="form-control" id="task-progress" value="${task.progress || 0}" />
-                        </div>
+                        
                     </div>
                     <div class="form-group mt-3">
                         <label><strong>Task Description:</strong></label>
@@ -127,6 +124,54 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 const taskDetailsModal = new bootstrap.Modal(document.getElementById('taskDetailsModal'));
                 taskDetailsModal.show();
+
+                // Add event listener for update button
+                document.getElementById('update-task').addEventListener('click', async () => {
+                    const updatedTaskData = {
+                        name: document.getElementById('task-id').value,
+                        subject: document.getElementById('task-subject').value,
+                        status: document.getElementById('task-status').value,
+                        team: document.getElementById('task-team').value,
+                        priority: document.getElementById('task-priority').value,
+                        exp_start_date: document.getElementById('task-exp-start-date').value,
+                        exp_end_date: document.getElementById('task-exp-end-date').value,
+                        progress: document.getElementById('task-progress').value,
+                        description: document.getElementById('task-description').value
+                    };
+
+                    try {
+                        const response = await frappe.call({
+                            method: "frappe.client.get",
+                            args: {
+                                doc: {
+                                    doctype: "Task",
+                                    ...updatedTaskData
+                                }
+                            }
+                        });
+
+                        if (response.message) {
+                            // Update the table row with new data
+                            const updatedRow = document.querySelector(`tr[data-id="${updatedTaskData.name}"]`);
+                            if (updatedRow) {
+                                updatedRow.cells[1].textContent = updatedTaskData.subject || 'N/A';
+                                const statusButton = updatedRow.cells[2].querySelector('button');
+                                statusButton.textContent = updatedTaskData.status || 'Pending';
+                                statusButton.className = `btn btn-${updatedTaskData.status === 'Completed' ? 'success' : 'warning'} btn-sm`;
+                            }
+
+                            // Close the modal
+                            const taskDetailsModal = bootstrap.Modal.getInstance(document.getElementById('taskDetailsModal'));
+                            taskDetailsModal.hide();
+
+                            // Optional: Show a success message
+                            alert('Task updated successfully!');
+                        }
+                    } catch (error) {
+                        console.error("Error updating task:", error);
+                        alert('Failed to update task. Please try again.');
+                    }
+                });
             }
         } catch (error) {
             console.error("Error fetching task details:", error);
