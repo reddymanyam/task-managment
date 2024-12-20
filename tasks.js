@@ -2,17 +2,47 @@ document.addEventListener('DOMContentLoaded', async () => {
     const tbody = document.getElementById('task-table-body');
     const addTaskForm = document.getElementById('add-task-form');
     const addTaskModal = new bootstrap.Modal(document.getElementById('addTaskModal'));
+    const prevPageBtn = document.getElementById('prev-page');
+    const nextPageBtn = document.getElementById('next-page');
+    const currentPageSpan = document.getElementById('current-page');
 
-    async function fetchTotalPages() {
+    // Pagination state
+    let currentPage = 1;
+    let totalPages = 1;
+    const PAGE_SIZE = 20;
+
+    async function fetchTotalCount() {
         try {
             const response = await frappe.call({
                 method: "frappe.client.get_list",
                 args: {
                     doctype: "Task",
-                    fields: ["name", "status", "assigned_to", "exp_end_date", "subject"],
-                    limit_page_length: 40,
+                    fields: ["name"],
+                    limit_page_length: 0,
                 },
             });
+            return response.message ? response.message.length : 0;
+        } catch (error) {
+            console.error("Error fetching total count:", error);
+            return 0;
+        }
+    }
+ 
+    async function fetchPageData(page) {
+        try {
+            const start = (page - 1) * PAGE_SIZE;
+            const response = await frappe.call({
+                method: "frappe.client.get_list",
+                args: {
+                    doctype: "Task",
+                    fields: ["name", "status", "assigned_to", "exp_end_date", "subject"],
+                    limit_start: start,
+                    limit_page_length: PAGE_SIZE,
+                },
+            });
+
+            // Clear existing rows
+            tbody.innerHTML = '';
 
             if (response.message && response.message.length > 0) {
                 response.message.forEach(task => {
@@ -20,13 +50,46 @@ document.addEventListener('DOMContentLoaded', async () => {
                 });
                 attachRowClickEvents();
             } else {
-                tbody.innerHTML = '<tr><td colspan="8">No tasks found.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5">No tasks found.</td></tr>';
             }
+
+            // Update pagination controls
+            updatePaginationControls();
         } catch (error) {
             console.error("Error fetching data:", error);
-            tbody.innerHTML = '<tr><td colspan="8">Error fetching data.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5">Error fetching data.</td></tr>';
         }
     }
+
+    function updatePaginationControls() {
+        currentPageSpan.textContent = `Page ${currentPage} of ${totalPages}`;
+        prevPageBtn.disabled = currentPage === 1;
+        nextPageBtn.disabled = currentPage === totalPages;
+    }
+
+    // Initialize pagination
+    async function initializePagination() {
+        const totalCount = await fetchTotalCount();
+        totalPages = Math.ceil(totalCount / PAGE_SIZE);
+        await fetchPageData(currentPage);
+    }
+
+    // Event listeners for pagination buttons
+    prevPageBtn.addEventListener('click', async () => {
+        if (currentPage > 1) {
+            currentPage--;
+            await fetchPageData(currentPage);
+        }
+    });
+
+    nextPageBtn.addEventListener('click', async () => {
+        if (currentPage < totalPages) {
+            currentPage++;
+            await fetchPageData(currentPage);
+        }
+    });
+
+   
 
     function addTaskToTable(task) {
         const row = document.createElement('tr');
@@ -99,7 +162,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                         </div>
                         <div class="form-group">
                             <label><strong>Priority:</strong></label>
-                            <input type="text" class="form-control task-field" id="task-priority" value="${task.priority || ''}" data-original="${task.priority || ''}" />
+                            <select class="form-control task-field" id="task-priority" data-original="${task.priority || ''}">
+                                <option value="N/A" ${task.priority === 'N/A' ? 'selected' : ''}>N/A</option>
+                                <option value="Low" ${task.priority === 'Low' ? 'selected' : ''}>Low</option>
+                                <option value="Medium" ${task.priority === 'Medium' ? 'selected' : ''}>Medium</option>
+                                <option value="High" ${task.priority === 'High' ? 'selected' : ''}>High</option>
+                                <option value="Urgent" ${task.priority === 'Urgent' ? 'selected' : ''}>Urgent</option>
+                            </select>
                         </div>
                         <div class="form-group">
                             <label><strong>Progress (%):</strong></label>
@@ -214,7 +283,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Add Task Form Submission Handler
     addTaskForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
+        // e.preventDefault();
         
         // Validate required fields
         const requiredFields = ['task-subject', 'task-status', 'task-assigned-to'];
@@ -260,12 +329,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 },
             });
 
-            if (response.message) {
-                // Add the new task to the table
-                addTaskToTable(response.message);
-                
-                // Re-attach click events to ensure the new row is interactive
-                attachRowClickEvents();
+           if (response.message) {
+                // Refresh the current page to show the new task
+                await initializePagination();
                 
                 // Hide the modal
                 addTaskModal.hide();
@@ -273,7 +339,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Reset the form
                 addTaskForm.reset();
                 
-                // Optional: Show a success message
                 alert('Task added successfully!');
             }
         } catch (error) {
@@ -282,8 +347,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // Initial fetch of tasks
-    await fetchTotalPages();
+    // Initialize the page
+    await initializePagination();
 });
 
 
