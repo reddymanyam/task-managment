@@ -35,7 +35,7 @@
 
         <!-- Pagination Controls -->
         <nav>
-            <ul class="pagination justify-content-center py-4">
+            <ul class="pagination justify-content-center py-3">
                 <li class="page-item">
                     <button class="page-link" id="prev-page" disabled>Previous</button>
                 </li>
@@ -77,7 +77,29 @@
                             </div>
                             <div class="mb-3">
                                 <label for="task-team" class="form-label">Team</label>
-                                <input type="text" id="task-team" class="form-control">
+                                <input type="text" id="task-team" class="form-control" list="team-suggestions">
+                                <datalist id="team-suggestions">
+                                    <option value="Accounts">
+                                    <option value="Accounts Payable">
+                                    <option value="Accounts Receivable">
+                                    <option value="Capital Markets">
+                                    <option value="Events">
+                                    <option value="FOE">
+                                    <option value="Finance">
+                                    <option value="HR Data">
+                                    <option value="IOT">
+                                    <option value="Indian Data">
+                                    <option value="Layouts">
+                                    <option value="MR">
+                                    <option value="Mali">
+                                    <option value="Marketing">
+                                    <option value="Python development">
+                                    <option value="Sales - BDM">
+                                    <option value="Software">
+                                    <option value="Taxes">
+                                    <option value="To be filled">
+                                    <option value="Us Data">
+                                </datalist>
                             </div>
                             <div class="mb-3">
                                 <label for="task-priority" class="form-label">Priority</label>
