@@ -9,7 +9,7 @@
 </head>
 
 <body>
-    <div class="container my-4">
+    <div class="mx-4 my-4">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h4>Task List</h4>
             <button id="add-task-btn" class="btn btn-primary">Add Task</button>
@@ -31,7 +31,24 @@
                 </tbody>
             </table>
         </div>
+        
 
+        <!-- Pagination Controls -->
+        <nav>
+            <ul class="pagination justify-content-center">
+                <li class="page-item">
+                    <button class="page-link" id="prev-page" disabled>Previous</button>
+                </li>
+                <li class="page-item">
+                    <span class="page-link" id="current-page">Page 1</span>
+                </li>
+                <li class="page-item">
+                    <button class="page-link" id="next-page">Next</button>
+                </li>
+            </ul>
+        </nav>
+
+        
         <!-- Modal for Adding a Task -->
         <div class="modal fade" id="addTaskModal" tabindex="-1" aria-labelledby="addTaskModalLabel" aria-hidden="true">
             <div class="modal-dialog">
@@ -64,7 +81,12 @@
                             </div>
                             <div class="mb-3">
                                 <label for="task-priority" class="form-label">Priority</label>
-                                <input type="text" id="task-priority" class="form-control">
+                                <select id="task-priority" class="form-select" required>
+                                    <option value="Low">Low</option>
+                                    <option value="Medium">Medium</option>
+                                    <option value="High">High</option>
+                                    <option value="Urgent">Urgent</option>
+                                </select>
                             </div>
                             <div class="mb-3">
                                 <label for="task-assigned-to" class="form-label">Assigned To</label>
@@ -111,3 +133,5 @@
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
