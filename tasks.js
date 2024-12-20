@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', async () => {
     const tbody = document.getElementById('task-table-body');
-    const addTaskForm = document.getElementById('add-task-form');
     const addTaskModal = new bootstrap.Modal(document.getElementById('addTaskModal'));
     const prevPageBtn = document.getElementById('prev-page');
     const nextPageBtn = document.getElementById('next-page');
