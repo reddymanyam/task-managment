@@ -50,6 +50,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         teamArray.forEach(team => {
             const option = document.createElement('option');
             option.value = team;
+            option.style.backgroundColor = "red"; 
+            option.style.width = '200px'; 
+            option.style.height = '30px'; 
             teamSuggestions.appendChild(option);
         });
     }
