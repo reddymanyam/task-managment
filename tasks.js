@@ -229,7 +229,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         </div>
                         <div class="form-group">
                             <label><strong>Progress (%):</strong></label>
-                            <input type="number" class="form-control task-field" id="task-progress" value="${task.progress || 0}" data-original="${task.progress || 0}" />
+                            <input type="number" class="form-control task-field" id="task-progress" value="${task.status === 'Completed' ? 100 : 0}" data-original="${task.progress || 0}" readonly />
                         </div>
                         <div class="form-group">
                             <label><strong>Expected Start Date:</strong></label>
@@ -252,6 +252,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 // Fetch teams for the edit modal
                 fetchTeams();
+
+                // Add event listener for status changes
+                const statusSelect = document.getElementById('task-status');
+                const progressInput = document.getElementById('task-progress');
+                
+                statusSelect.addEventListener('change', () => {
+                    progressInput.value = statusSelect.value === 'Completed' ? 100 : 0;
+                });
 
                 // Track changes in editable fields
                 const editableFields = document.querySelectorAll('.task-field');
@@ -283,6 +291,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                             updatedFields[fieldName] = field.value;
                         }
                     });
+
+                    // Always include progress when status is updated
+                    if (updatedFields.status) {
+                        updatedFields.progress = updatedFields.status === 'Completed' ? 100 : 0;
+                    }
 
                     if (Object.keys(updatedFields).length === 0) {
                         alert('No changes detected.');
