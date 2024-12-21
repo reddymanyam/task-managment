@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Initialize team suggestions
     let teams = new Set();
-    
+
     // Fetch unique teams from existing tasks
     async function fetchTeams() {
         try {
@@ -26,17 +26,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                     limit_page_length: 0
                 }
             });
-            
+
             // Clear existing teams
             teams.clear();
-            
+
             // Add non-empty team values to the Set
             response.message.forEach(task => {
                 if (task.team) {
                     teams.add(task.team);
                 }
             });
-            
+
             // Convert Set to Array and update suggestions
             updateTeamSuggestions([...teams].sort());
         } catch (error) {
@@ -50,9 +50,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         teamArray.forEach(team => {
             const option = document.createElement('option');
             option.value = team;
-            option.style.backgroundColor = "red"; 
-            option.style.width = '200px'; 
-            option.style.height = '30px'; 
             teamSuggestions.appendChild(option);
         });
     }
@@ -60,7 +57,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Filter teams based on input
     teamInput.addEventListener('input', (e) => {
         const value = e.target.value.toLowerCase();
-        const filteredTeams = [...teams].filter(team => 
+        const filteredTeams = [...teams].filter(team =>
             team.toLowerCase().includes(value)
         );
         updateTeamSuggestions(filteredTeams);
@@ -69,9 +66,131 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Fetch teams when the add task modal is shown
     document.getElementById('add-task-btn').addEventListener('click', () => {
         fetchTeams();
+        initDependenciesTable();
         addTaskModal.show();
     });
 
+    // Add this to your existing DOMContentLoaded event listener
+
+    const addDependencyRow = () => {
+        const tbody = document.querySelector('#dependencies-table tbody');
+        const rowCount = tbody.children.length + 1;
+
+        const newRow = document.createElement('tr');
+        newRow.innerHTML = `
+        <td><input type="checkbox" class="dependency-checkbox"></td>
+        <td>${rowCount}</td>
+        <td>
+            <select class="form-select dependency-task">
+                <option value="">Select Task</option>
+            </select>
+        </td>
+        <td class="dependency-subject"></td>
+        <td>
+            <button type="button" class="btn btn-danger btn-sm delete-row">
+                <i class="bi bi-trash"></i> Delete
+            </button>
+        </td>
+    `;
+
+        tbody.appendChild(newRow);
+
+        // Fetch and populate tasks in the new select
+        updateTaskSelect(newRow.querySelector('.dependency-task'));
+
+        // Add delete button event listener
+        newRow.querySelector('.delete-row').addEventListener('click', () => {
+            deleteRow(newRow);
+        });
+    };
+
+    // Function to delete a row
+    const deleteRow = (row) => {
+        if (confirm('Are you sure you want to delete this dependency?')) {
+            row.remove();
+            updateRowNumbers();
+        }
+    };
+
+    // Function to update row numbers after deletion
+    const updateRowNumbers = () => {
+        const rows = document.querySelectorAll('#dependencies-table tbody tr');
+        rows.forEach((row, index) => {
+            row.querySelector('.row-number').textContent = index + 1;
+        });
+    };
+
+    // Function to fetch and populate task options
+    const updateTaskSelect = async (selectElement) => {
+        try {
+            const response = await frappe.call({
+                method: "frappe.client.get_list",
+                args: {
+                    doctype: "Task",
+                    fields: ["name", "subject"],
+                    limit_page_length: 0
+                }
+            });
+
+            if (response.message) {
+                response.message.forEach(task => {
+                    const option = document.createElement('option');
+                    option.value = task.name;
+                    option.textContent = task.name;
+                    selectElement.appendChild(option);
+                });
+            }
+        } catch (error) {
+            console.error("Error fetching tasks:", error);
+        }
+    };
+
+    // Handle task selection change
+    const handleTaskSelection = async (event) => {
+        const select = event.target;
+        const subjectCell = select.closest('tr').querySelector('.dependency-subject');
+
+        if (select.value) {
+            try {
+                const response = await frappe.call({
+                    method: "frappe.client.get",
+                    args: {
+                        doctype: "Task",
+                        name: select.value
+                    }
+                });
+
+                if (response.message) {
+                    subjectCell.textContent = response.message.subject || 'N/A';
+                }
+            } catch (error) {
+                console.error("Error fetching task details:", error);
+                subjectCell.textContent = 'Error loading subject';
+            }
+        } else {
+            subjectCell.textContent = '';
+        }
+    };
+
+    // Initialize the dependencies table
+    const initDependenciesTable = () => {
+        // Clear existing table content
+        const tbody = document.querySelector('#dependencies-table tbody');
+        tbody.innerHTML = '';
+
+        // Add initial row
+        addDependencyRow();
+
+        // Add event listener for the "Add Row" button
+        document.getElementById('add-dependency-row').addEventListener('click', addDependencyRow);
+
+        // Add event delegation for task selection changes
+        document.querySelector('#dependencies-table').addEventListener('change', (event) => {
+            if (event.target.classList.contains('dependency-task')) {
+                handleTaskSelection(event);
+            }
+        });
+    };
     // Rest of your existing code...
     async function fetchTotalCount() {
         try {
@@ -89,7 +208,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             return 0;
         }
     }
- 
+
     async function fetchPageData(page) {
         try {
             const start = (page - 1) * PAGE_SIZE;
@@ -229,7 +348,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         </div>
                         <div class="form-group">
                             <label><strong>Progress (%):</strong></label>
-                            <input type="number" class="form-control task-field" id="task-progress" value="${task.status === 'Completed' ? 100 : 0}" data-original="${task.progress || 0}" readonly />
+                            <input type="number" class="form-control task-field" id="task-progress" value="${task.progress || 0}" data-original="${task.progress || 0}" />
                         </div>
                         <div class="form-group">
                             <label><strong>Expected Start Date:</strong></label>
@@ -253,23 +372,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Fetch teams for the edit modal
                 fetchTeams();
 
-                // Add event listener for status changes
-                const statusSelect = document.getElementById('task-status');
-                const progressInput = document.getElementById('task-progress');
-                
-                statusSelect.addEventListener('change', () => {
-                    progressInput.value = statusSelect.value === 'Completed' ? 100 : 0;
-                });
-
                 // Track changes in editable fields
                 const editableFields = document.querySelectorAll('.task-field');
                 const updateButton = document.getElementById('update-task');
-                
+
                 // Store original values and track changes
                 const originalValues = new Map();
                 editableFields.forEach(field => {
                     originalValues.set(field.id, field.value);
-                    
+
                     field.addEventListener('input', () => {
                         let hasChanges = false;
                         editableFields.forEach(f => {
@@ -284,18 +395,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Add event listener for update button
                 document.getElementById('update-task').addEventListener('click', async () => {
                     const updatedFields = {};
-                    
+
                     editableFields.forEach(field => {
                         if (field.value !== originalValues.get(field.id)) {
                             const fieldName = field.id.replace('task-', '');
                             updatedFields[fieldName] = field.value;
                         }
                     });
-
-                    // Always include progress when status is updated
-                    if (updatedFields.status) {
-                        updatedFields.progress = updatedFields.status === 'Completed' ? 100 : 0;
-                    }
 
                     if (Object.keys(updatedFields).length === 0) {
                         alert('No changes detected.');
@@ -304,7 +410,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                     try {
                         const response = await frappe.call({
-                            method: "frappe.client.set_value",                     
+                            method: "frappe.client.set_value",
                             args: {
                                 doctype: "Task",
                                 name: document.getElementById('task-id').value,
