@@ -5,16 +5,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     const nextPageBtn = document.getElementById('next-page');
     const currentPageSpan = document.getElementById('current-page');
     const teamInput = document.getElementById('task-team');
+    const assignedToInput = document.getElementById('task-assigned-to');
     const teamSuggestions = document.getElementById('team-suggestions');
-
+    const assignedtoSuggestions = document.getElementById('assignedto-suggestions');
+    
     // Pagination state
     let currentPage = 1;
     let totalPages = 1;
     const PAGE_SIZE = 20;
-
+    
     // Initialize team suggestions
     let teams = new Set();
-
+    let assignedTo = new Set();
+    
     // Fetch unique teams from existing tasks
     async function fetchTeams() {
         try {
@@ -22,28 +25,31 @@ document.addEventListener('DOMContentLoaded', async () => {
                 method: "frappe.client.get_list",
                 args: {
                     doctype: "Task",
-                    fields: ["team"],
+                    fields: ["team", "assigned_to"],
                     limit_page_length: 0
                 }
             });
-
+    
             // Clear existing teams
             teams.clear();
-
+            assignedTo.clear();
+    
             // Add non-empty team values to the Set
             response.message.forEach(task => {
-                if (task.team) {
+                if (task.team && task.assigned_to) {
                     teams.add(task.team);
+                    assignedTo.add(task.assigned_to);
                 }
             });
-
+    
             // Convert Set to Array and update suggestions
             updateTeamSuggestions([...teams].sort());
+            updateAssignedToSuggestions([...assignedTo].sort());
         } catch (error) {
             console.error("Error fetching teams:", error);
         }
     }
-
+    
     // Update datalist with team suggestions
     function updateTeamSuggestions(teamArray) {
         teamSuggestions.innerHTML = '';
@@ -53,7 +59,17 @@ document.addEventListener('DOMContentLoaded', async () => {
             teamSuggestions.appendChild(option);
         });
     }
-
+    
+    // Update datalist with "Assigned To" suggestions
+    function updateAssignedToSuggestions(assignedToArray) {
+        assignedtoSuggestions.innerHTML = '';
+        assignedToArray.forEach(assignedTo => {
+            const option = document.createElement('option');
+            option.value = assignedTo;
+            assignedtoSuggestions.appendChild(option);
+        });
+    }
+    
     // Filter teams based on input
     teamInput.addEventListener('input', (e) => {
         const value = e.target.value.toLowerCase();
@@ -62,6 +78,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         );
         updateTeamSuggestions(filteredTeams);
     });
+    
+    // Filter "Assigned To" based on input
+    assignedToInput.addEventListener('input', (e) => {
+        const value = e.target.value.toLowerCase();
+        const filteredAssignedTo = [...assignedTo].filter(assignedTo =>
+            assignedTo.toLowerCase().includes(value)
+        );
+        updateAssignedToSuggestions(filteredAssignedTo);
+    });
+    
+
 
     // Fetch teams when the add task modal is shown
     document.getElementById('add-task-btn').addEventListener('click', () => {
@@ -363,6 +390,24 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <label><strong>Task Description:</strong></label>
                         <textarea class="form-control task-field" id="task-description" rows="4" data-original="${task.description || ''}">${task.description || ''}</textarea>
                     </div>
+                    <div class="mb-3">
+                                <label class="form-label">Dependencies</label>
+                                <table class="table table-bordered table-hover" id="dependencies-table">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th><input type="checkbox" id="select-all-dependencies"></th>
+                                            <th>No.</th>
+                                            <th>Task</th>
+                                            <th>Subject</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Rows will be added dynamically -->
+                                    </tbody>
+                                </table>
+                                <button type="button" id="add-dependency-row" class="btn btn-secondary">Add Row</button>
+                            </div>
                     <button type="button" class="btn btn-primary mt-3" id="update-task" disabled>Update</button>
                 `;
 
