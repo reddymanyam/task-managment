@@ -423,6 +423,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 // Store original values and track changes
                 const originalValues = new Map();
+
                 editableFields.forEach(field => {
                     originalValues.set(field.id, field.value);
 
@@ -436,6 +437,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         updateButton.disabled = !hasChanges;
                     });
                 });
+                
 
                 // Add event listener for update button
                 document.getElementById('update-task').addEventListener('click', async () => {
