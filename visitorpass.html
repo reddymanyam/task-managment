@@ -4,41 +4,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-
+    <title>Visitor Pass Verification</title>
     <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.2/dist/full.min.css" rel="stylesheet" type="text/css" />
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body>
+<body class="min-h-screen flex flex-col">
     <!-- Page Header -->
-    <header>
+    <header class="p-4 border-b">
         <img src="https://noveloffice.in/wp-content/uploads/2023/08/novel-office-logo.webp" height="auto"
             alt="Novel Logo" title="Novel Office" style="max-width: 230px;">
     </header>
 
-    <!-- First Section -->
-    <div class="flex items-center justify-center flex-col pt-2" id="first-section">
-        <div class="p-4 font-semibold text-xl flex justify-center">
-            <h3><span class="text-purple-800">Visitor Pass</span> & Status</h3>
-        </div>
+    <!-- Main Content -->
+    <main class="flex-grow">
+        <!-- First Section -->
+        <div class="flex items-center justify-center flex-col pt-2" id="first-section">
+            <div class="p-4 font-semibold text-xl flex justify-center">
+                <h3><span class="text-purple-800">Visitor Pass</span> & Status</h3>
+            </div>
 
-        <!-- OTP Section -->
-        <div class="mt-4 w-72">
-            <label for="otp" class="block text-xl font-medium text-black-900">Enter 6-Digit OTP</label>
-            <input type="text" id="otp" name="otp" maxlength="6" pattern="\d*" class="mt-1 block w-full p-3 text-2xl border-2 border-black rounded-md focus:outline-none" placeholder="Enter OTP" />
-            <div id="message"></div>  
-        </div>
+            <!-- OTP Section -->
+            <div class="mt-4 w-72">
+                <label for="otp" class="block text-xl font-medium text-black-900">Enter 6-Digit OTP</label>
+                <input type="text" id="otp" name="otp" maxlength="6" pattern="\d*"
+                    class="mt-1 block w-full p-3 text-2xl border-2 border-black rounded-md focus:outline-none"
+                    placeholder="Enter OTP" />
+                <div id="message"></div>
+            </div>
 
-        <!-- Verify Button -->
-        <div class="mt-4">
-            <button class="bg-purple-800 text-white py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500" id="verifybtn">Verify</button>
+            <!-- Verify Button -->
+            <div class="mt-4">
+                <button class="bg-purple-800 text-white py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    id="verifybtn">Verify</button>
+            </div>
         </div>
-    </div>
+    </main>
 
     <!-- Page Footer -->
-    <footer class="mt-8">
-        <span style="font-size: 14px; margin: 0;">&copy; Copyright 2024 Novel Office.</span>
+    <footer class="p-4 border-t text-center">
+        <span class="text-sm">&copy; Copyright 2024 Novel Office.</span>
     </footer>
 </body>
 
