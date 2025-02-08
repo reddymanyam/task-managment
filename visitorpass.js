@@ -108,12 +108,19 @@ function resetToOTPPage() {
         </div>
     `;
 
-    // Reattach event listeners to the new elements
-    const newVerifyButton = document.getElementById("verifybtn");
-    const newOtpInput = document.getElementById("otp");
+    // Reattaching event listeners to the new elements                   //this is because of while writting innerhtml, the dom complete replaces, then there is no element(buttons) in the dom, so get them back to functionality we use them, by again attaching
+    // const newVerifyButton = document.getElementById("verifybtn");
+    // const newOtpInput = document.getElementById("otp");
 
-    newVerifyButton.addEventListener('click', handleVerification);
-    newOtpInput.addEventListener('input', handleInputChange);
+    // newVerifyButton.addEventListener('click', handleVerification);
+    // newOtpInput.addEventListener('input', handleInputChange);
+
+    firstSection.addEventListener('click', function (event) {            //event delegation
+        if (event.target.id === "verifybtn") {
+            handleVerification();
+        }
+    });
+    
 }
 
 function handleVerification() {
