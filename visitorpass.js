@@ -1,7 +1,6 @@
 const verifyButton = document.getElementById("verifybtn");
 const otpInput = document.getElementById("otp");
 const messageDiv = document.getElementById("message");
-const backButton = document.getElementById("backbtn");
 const firstSection = document.getElementById("first-section");
 
 function formatDate(date) {
