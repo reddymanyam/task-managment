@@ -2,6 +2,7 @@ const verifyButton = document.getElementById("verifybtn");
 const otpInput = document.getElementById("otp");
 const messageDiv = document.getElementById("message");
 const firstSection = document.getElementById("first-section");
+let employeeName  = "";
 
 function formatDate(date) {
     const options = { day: 'numeric', month: 'short', year: 'numeric' };
@@ -14,7 +15,7 @@ function getStatusDisplay(status) {
         'Approved': { color: '#ffffff', backgroundColor: '#228B22' },
         'Pending': { color: '#000000', backgroundColor: '#FFBF00' },
         'Rejected': { color: '#ffffff', backgroundColor: '#FF0000' },
-        'Date Missmatch':{color:'#ffffff', backgroundColor: '#FF0000'}
+        'Date Missmatch': { color: '#ffffff', backgroundColor: '#FF0000' }
     };
 
     return `
@@ -120,13 +121,13 @@ function resetToOTPPage() {
             handleVerification();
         }
     });
-    
+
 }
 
 function handleVerification() {
     const otp = document.getElementById("otp").value.trim();
     const messageDiv = document.getElementById("message");
-    
+
     if (!otp) {
         messageDiv.textContent = 'Please enter a valid OTP';
         messageDiv.style.color = 'red';
@@ -160,7 +161,7 @@ function handleVerification() {
 function handleInputChange() {
     const messageDiv = document.getElementById("message");
     const verifyButton = document.getElementById("verifybtn");
-    
+
     messageDiv.textContent = '';
     verifyButton.style.display = "inline-block";
 }
@@ -168,3 +169,70 @@ function handleInputChange() {
 // Initial event listeners
 verifyButton.addEventListener('click', handleVerification);
 otpInput.addEventListener('input', handleInputChange);
+
+
+//----------------------------------------------------------------------frappe calls--------------------------------------------------------------
+function attendanceVerification() {
+    console.log("Button is clicked...");
+
+    frappe.call({
+        method: "frappe.client.get_value",
+        args: {
+            doctype: "Employee",
+            filters: { user_id: frappe.session.user }, 
+            fieldname: ['name', 'employee_name'],
+        },
+        callback: function (response) {
+            if (response.message) { 
+                console.log("Employee details:", response.message);
+
+                let employeeName = response.message.employee_name; 
+                frappe.call({
+                    method: "frappe.client.get_list",
+                    args: {
+                        doctype: "Attendance",
+                        fields: ["*"], 
+                        filters: { employee_name: employeeName }
+                    },
+                    callback: function (attendanceResponse) {
+                        if (attendanceResponse.message && attendanceResponse.message.length > 0) {
+                            console.log("Attendance records:", attendanceResponse.message);
+                        } else {
+                            console.log("No attendance records found.");
+                        }
+                    }
+                });
+
+            } else {
+                console.log("User not found.");
+            }
+        }
+    });
+}
+
+
+function displayEmployeeData(callback){
+    firstSection.innerHTML = `
+    <div class="p-4 font-semibold text-xl flex justify-center">
+        <h3>< class="text-purple-800>Employee Details.........</h3>
+    </div>
+
+    <div class="mt-4 w-72">
+        <label for="otp" class="block text-xl font-medium text-black-900">Enter 6-Digit OTP</label>
+        <input type="text" id="otp" name="otp" maxlength="6" pattern="\d*" class="mt-1 block w-full p-3 text-2xl border-2 border-black rounded-md focus:outline-none" placeholder="Enter OTP" />
+        <div id="message"></div>
+    </div>
+
+    <div class="mt-4">
+        <button class="bg-purple-800 text-white py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500" id="verifybtn">Verify</button>
+    </div>
+`;
+}
+displayEmployeeData();
+
+let attenBtn = document.getElementById("atnbtn");
+if (attenBtn) {
+    attenBtn.addEventListener('click', displayEmployeeData(attendanceVerification) );
+} else {
+    console.log("Button with ID 'atnbtn' not found in DOM.");
+}
