@@ -116,7 +116,7 @@ function resetToOTPPage() {
     // newOtpInput.addEventListener('input', handleInputChange);
 
     firstSection.addEventListener('click', function (event) {            //event delegation
-        if (event.target.id === "verifybtn") {
+        if (event.target.id === "verifybtn") {                          //when the inner html contant changes, then we  need to attach event handlers again and again due to dom, but by using event delegaton we no need to attach them again and again.
             handleVerification();
         }
     });
